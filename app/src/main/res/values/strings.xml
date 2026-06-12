@@ -1,3 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">GestionnaireNotes</string>
+    <string name="app_name">Gestionnaire de Notes</string>
+    <string name="hint_rechercher">Rechercher</string>
+    <string name="btn_favoris">Favoris</string>
+    <string name="txt_aucune_notes">Aucune notes</string>
+    <string name="btn_creer">Créer</string>
+    <string name="btn_modifier">Modifier</string>
+    <string name="error_titre_vide">Le titre ne peut pas être vide</string>
+    <string name="error_contenu_vide">Le contenu ne peut pas être vide</string>
 </resources>
