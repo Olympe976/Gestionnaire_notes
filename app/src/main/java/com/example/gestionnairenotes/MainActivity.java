@@ -11,17 +11,15 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.LiveData;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements NoteAdapter.OnNoteInteractionListener{
 
     // Déclaration des views
     private RecyclerView recyclerView;
@@ -31,8 +29,7 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout colorPaletteLayout;
     private TextView tvEmpty;
 
-    // ⏳ ATTEND AMINATA
-    // private NoteAdapter adapter;
+    private NoteAdapter adapter;
 
     private NoteDao noteDao;
 
@@ -62,8 +59,7 @@ public class MainActivity extends AppCompatActivity {
 
         initViews();
 
-        // ⏳ ATTEND AMINATA
-        // setupRecyclerView();
+        setupRecyclerView();
 
         setupSearch();
         setupFavorisButton();
@@ -152,7 +148,6 @@ public class MainActivity extends AppCompatActivity {
         isPaletteOpen = false;
         colorPaletteLayout.setVisibility(View.GONE);
 
-        // ⏳ ATTEND FALILOU - NoteDao
         loadNotes();
     }
 
@@ -175,7 +170,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupRecyclerView() {
-        // ⏳ ATTEND AMINATA
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        adapter = new NoteAdapter(new ArrayList<>(), this);
+        recyclerView.setAdapter(adapter);
     }
 
     private void navigateToCreate(String color) {
@@ -184,10 +181,24 @@ public class MainActivity extends AppCompatActivity {
 
 
      private void updateUI(List<Note> notes) {
-         // ⏳ ATTEND AMINATA
-         //adapter.updateList(notes);
+         adapter.updateList(notes);
          boolean isEmpty = notes.isEmpty();
          tvEmpty.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
          recyclerView.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+     }
+
+     @Override
+     public void onNoteClick(Note note) {
+         //⏳ ATTEND AMINATA (interface) + MARIAMA (NoteFormActivity).
+//         Intent intent = new Intent(this, NoteFormActivity.class);
+//         intent.putExtra(NoteFormActivity.EXTRA_NOTE_ID, note.getId());
+//         intent.putExtra(NoteFormActivity.EXTRA_COLOR, note.getColor());
+//         startActivity(intent);
+     }
+
+
+     @Override
+     public void onNoteDoubleClick(Note note) {
+         noteDao.toggleFavorite(note.getId(), !note.isFavorite());
      }
 }
