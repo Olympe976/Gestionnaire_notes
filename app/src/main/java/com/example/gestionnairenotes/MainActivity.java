@@ -2,6 +2,8 @@ package com.example.gestionnairenotes;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -14,7 +16,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.lifecycle.LiveData;
 import androidx.recyclerview.widget.RecyclerView;
+
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -25,6 +30,13 @@ public class MainActivity extends AppCompatActivity {
     private ImageButton fabAdd;
     private LinearLayout colorPaletteLayout;
     private TextView tvEmpty;
+
+    // ⏳ ATTEND AMINATA
+    // private NoteAdapter adapter;
+
+    private NoteDao noteDao;
+
+    private LiveData<List<Note>> currentSource;
 
     private boolean showFavoritesOnly = false;
     private boolean isPaletteOpen = false;
@@ -45,8 +57,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // ⏳ ATTEND FALILOU
-        // noteDao = AppDatabase.getInstance(this).noteDao();
+        // On recupere l'instance de connection a la base de données
+        noteDao = AppDatabase.getInstance(this).noteDao();
 
         initViews();
 
@@ -112,12 +124,12 @@ public class MainActivity extends AppCompatActivity {
 
         // IDs des pastilles dans le même ordre que PALETTE_COLORS[]
         int[] dotIds = {
-                R.id.dotGreen,
-                R.id.dotRed,
-                R.id.dotBlue,
-                R.id.dotYellow,
-                R.id.dotOrange,
-                R.id.dotGray
+                R.id.colorGreen,
+                R.id.colorRed,
+                R.id.colorBlue,
+                R.id.colorYellow,
+                R.id.colorOrange,
+                R.id.colorGray
         };
 
         for (int i = 0; i < dotIds.length; i++) {
@@ -141,11 +153,25 @@ public class MainActivity extends AppCompatActivity {
         colorPaletteLayout.setVisibility(View.GONE);
 
         // ⏳ ATTEND FALILOU - NoteDao
-        // loadNotes();
+        loadNotes();
     }
 
     private void loadNotes() {
-        // ⏳ ATTEND FALILOU
+        String query = etSearch.getText().toString().trim();
+
+        if(currentSource != null){
+            currentSource.removeObservers(this);
+        }
+
+         if (showFavoritesOnly) {
+             currentSource =  noteDao.getFavorites();
+         } else if (!query.isEmpty()) {
+             currentSource = noteDao.searchByTitle(query);
+         } else {
+             currentSource = noteDao.getAllNotes();
+         }
+
+         currentSource.observe(this, notes -> updateUI(notes));
     }
 
     private void setupRecyclerView() {
@@ -155,4 +181,13 @@ public class MainActivity extends AppCompatActivity {
     private void navigateToCreate(String color) {
         // ⏳ ATTEND MARIAMA
     }
+
+
+     private void updateUI(List<Note> notes) {
+         // ⏳ ATTEND AMINATA
+         //adapter.updateList(notes);
+         boolean isEmpty = notes.isEmpty();
+         tvEmpty.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+         recyclerView.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+     }
 }
