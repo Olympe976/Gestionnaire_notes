@@ -1,11 +1,11 @@
 package com.example.gestionnairenotes;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.graphics.Color;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -21,6 +21,7 @@ public class NoteFormActivity extends AppCompatActivity {
     private EditText etTitle, etContent;
     private Button btnSave;
     private LinearLayout formContainer;
+    private NoteDao noteDao;
 
     private String color;
     private int noteId = -1;
@@ -40,6 +41,7 @@ public class NoteFormActivity extends AppCompatActivity {
         etContent = findViewById(R.id.etContent);
         btnSave = findViewById(R.id.btnSave);
         formContainer = findViewById(R.id.formContainer);
+        noteDao = AppDatabase.getInstance(this).noteDao();
     }
 
     private void readIntentAndSetupMode() {
@@ -54,13 +56,21 @@ public class NoteFormActivity extends AppCompatActivity {
         if (noteId != -1) {
             isEditMode = true;
             btnSave.setText("Modifier");
-            // loadNoteData(noteId) sera appelé quand AppDatabase sera disponible
+            loadNoteData(noteId);
         } else {
             isEditMode = false;
             btnSave.setText("Créer");
         }
 
         btnSave.setOnClickListener(v -> saveNote());
+    }
+
+    private void loadNoteData(int id) {
+        Note note = noteDao.getById(id);
+        if (note != null) {
+            etTitle.setText(note.getTitle());
+            etContent.setText(note.getContent());
+        }
     }
 
     private void saveNote() {
@@ -81,8 +91,15 @@ public class NoteFormActivity extends AppCompatActivity {
 
         String date = new SimpleDateFormat("dd MMMM yyyy", Locale.FRENCH).format(new Date());
 
-        // insert / update sera connecté à AppDatabase quand Falilou aura commité
-        // Pour l'instant on ferme l'écran
+        Note note = new Note(title, content, color, false, date);
+
+        if (isEditMode) {
+            note.setId(noteId);
+            noteDao.update(note);
+        } else {
+            noteDao.insert(note);
+        }
+
         finish();
     }
 }
