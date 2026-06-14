@@ -1,5 +1,6 @@
 package com.example.gestionnairenotes;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
@@ -134,8 +135,7 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnNot
                 // Fermer la palette avant de naviguer
                 colorPaletteLayout.setVisibility(View.GONE);
                 isPaletteOpen = false;
-                // ⏳ ATTEND MARIAMA - NoteFormActivity
-                // navigateToCreate(color);
+                navigateToCreate(color);
             });
         }
     }
@@ -176,7 +176,9 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnNot
     }
 
     private void navigateToCreate(String color) {
-        // ⏳ ATTEND MARIAMA
+         Intent intent = new Intent(this, NoteFormActivity.class);
+         intent.putExtra(NoteFormActivity.EXTRA_COLOR, color);
+         startActivity(intent);
     }
 
 
@@ -189,11 +191,10 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnNot
 
      @Override
      public void onNoteClick(Note note) {
-         //⏳ ATTEND AMINATA (interface) + MARIAMA (NoteFormActivity).
-//         Intent intent = new Intent(this, NoteFormActivity.class);
-//         intent.putExtra(NoteFormActivity.EXTRA_NOTE_ID, note.getId());
-//         intent.putExtra(NoteFormActivity.EXTRA_COLOR, note.getColor());
-//         startActivity(intent);
+         Intent intent = new Intent(this, NoteFormActivity.class);
+         intent.putExtra(NoteFormActivity.EXTRA_NOTE_ID, note.getId());
+         intent.putExtra(NoteFormActivity.EXTRA_COLOR, note.getColor());
+         startActivity(intent);
      }
 
 
