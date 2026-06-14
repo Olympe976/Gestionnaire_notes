@@ -1,6 +1,7 @@
 package com.example.gestionnairenotes;
 
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.LayoutInflater;
@@ -50,9 +51,17 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder
         holder.tvDate.setText(note.getCreatedAt());
 
         try {
-            holder.container.setBackgroundColor(Color.parseColor(note.getColor()));
+            float radius = 12 * holder.itemView.getResources().getDisplayMetrics().density;
+            GradientDrawable bg = new GradientDrawable();
+            bg.setColor(Color.parseColor(note.getColor()));
+            bg.setCornerRadius(radius);
+            holder.container.setBackground(bg);
         } catch (IllegalArgumentException e) {
-            holder.container.setBackgroundColor(Color.parseColor("#828282"));
+            float radius = 12 * holder.itemView.getResources().getDisplayMetrics().density;
+            GradientDrawable bg = new GradientDrawable();
+            bg.setColor(Color.parseColor("#828282"));
+            bg.setCornerRadius(radius);
+            holder.container.setBackground(bg);
         }
 
         if (note.isFavorite()) {
