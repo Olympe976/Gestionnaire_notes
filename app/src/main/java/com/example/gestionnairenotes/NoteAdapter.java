@@ -1,6 +1,8 @@
 package com.example.gestionnairenotes;
 
 import android.graphics.Color;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,6 +24,10 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder
 
     private List<Note> noteList;
     private final OnNoteInteractionListener listener;
+
+    private long lastClickTime = 0;
+    private final Handler handler = new Handler(Looper.getMainLooper());
+    private Runnable singleClickRunnable;
 
     public NoteAdapter(List<Note> noteList, OnNoteInteractionListener listener) {
         this.noteList = noteList;
@@ -55,21 +61,18 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder
             holder.ivStar.setVisibility(View.GONE);
         }
 
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            private long lastClickTime = 0;
+        holder.itemView.setOnClickListener(v -> {
+            long currentTime = System.currentTimeMillis();
+            long elapsed = currentTime - lastClickTime;
 
-            @Override
-            public void onClick(View v) {
-                long currentTime = System.currentTimeMillis();
-                long elapsed = currentTime - lastClickTime;
-
-                if (elapsed < 300) {
-                    listener.onNoteDoubleClick(note);
-                    lastClickTime = 0;
-                } else {
-                    lastClickTime = currentTime;
-                    listener.onNoteClick(note);
-                }
+            if (elapsed < 300) {
+                handler.removeCallbacks(singleClickRunnable);
+                listener.onNoteDoubleClick(note);
+                lastClickTime = 0;
+            } else {
+                lastClickTime = currentTime;
+                singleClickRunnable = () -> listener.onNoteClick(note);
+                handler.postDelayed(singleClickRunnable, 300);
             }
         });
     }
