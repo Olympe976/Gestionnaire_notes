@@ -1,6 +1,9 @@
 package com.example.gestionnairenotes;
 
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +26,10 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder
     private List<Note> noteList;
     private final OnNoteInteractionListener listener;
 
+    private long lastClickTime = 0;
+    private final Handler handler = new Handler(Looper.getMainLooper());
+    private Runnable singleClickRunnable;
+
     public NoteAdapter(List<Note> noteList, OnNoteInteractionListener listener) {
         this.noteList = noteList;
         this.listener = listener;
@@ -44,9 +51,17 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder
         holder.tvDate.setText(note.getCreatedAt());
 
         try {
-            holder.container.setBackgroundColor(Color.parseColor(note.getColor()));
+            float radius = 12 * holder.itemView.getResources().getDisplayMetrics().density;
+            GradientDrawable bg = new GradientDrawable();
+            bg.setColor(Color.parseColor(note.getColor()));
+            bg.setCornerRadius(radius);
+            holder.container.setBackground(bg);
         } catch (IllegalArgumentException e) {
-            holder.container.setBackgroundColor(Color.parseColor("#828282"));
+            float radius = 12 * holder.itemView.getResources().getDisplayMetrics().density;
+            GradientDrawable bg = new GradientDrawable();
+            bg.setColor(Color.parseColor("#828282"));
+            bg.setCornerRadius(radius);
+            holder.container.setBackground(bg);
         }
 
         if (note.isFavorite()) {
@@ -55,21 +70,18 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder
             holder.ivStar.setVisibility(View.GONE);
         }
 
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            private long lastClickTime = 0;
+        holder.itemView.setOnClickListener(v -> {
+            long currentTime = System.currentTimeMillis();
+            long elapsed = currentTime - lastClickTime;
 
-            @Override
-            public void onClick(View v) {
-                long currentTime = System.currentTimeMillis();
-                long elapsed = currentTime - lastClickTime;
-
-                if (elapsed < 300) {
-                    listener.onNoteDoubleClick(note);
-                    lastClickTime = 0;
-                } else {
-                    lastClickTime = currentTime;
-                    listener.onNoteClick(note);
-                }
+            if (elapsed < 300) {
+                handler.removeCallbacks(singleClickRunnable);
+                listener.onNoteDoubleClick(note);
+                lastClickTime = 0;
+            } else {
+                lastClickTime = currentTime;
+                singleClickRunnable = () -> listener.onNoteClick(note);
+                handler.postDelayed(singleClickRunnable, 300);
             }
         });
     }
