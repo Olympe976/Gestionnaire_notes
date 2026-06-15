@@ -63,7 +63,7 @@
         android:clipToPadding="false"
         android:paddingBottom="8dp" />
 
-    <!-- Palette de couleurs -->
+    <!-- Palette de couleurs : 6 couleurs uniquement -->
     <LinearLayout
         android:id="@+id/colorPaletteLayout"
         android:layout_width="wrap_content"
@@ -75,18 +75,6 @@
         android:layout_marginBottom="72dp"
         android:gravity="center_horizontal"
         android:visibility="gone">
-
-        <ImageView android:id="@+id/colorBlack"
-            android:layout_width="40dp" android:layout_height="40dp"
-            android:layout_marginBottom="8dp"
-            android:background="@drawable/circle_black"
-            android:contentDescription="Noir" />
-
-        <ImageView android:id="@+id/colorWhite"
-            android:layout_width="40dp" android:layout_height="40dp"
-            android:layout_marginBottom="8dp"
-            android:background="@drawable/circle_white"
-            android:contentDescription="Blanc" />
 
         <ImageView android:id="@+id/colorGray"
             android:layout_width="40dp" android:layout_height="40dp"

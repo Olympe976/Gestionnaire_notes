@@ -1,24 +1,205 @@
 package com.example.gestionnairenotes;
 
+import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+import androidx.lifecycle.LiveData;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-public class MainActivity extends AppCompatActivity {
+import java.util.ArrayList;
+import java.util.List;
+
+public class MainActivity extends AppCompatActivity implements NoteAdapter.OnNoteInteractionListener{
+
+    // Déclaration des views
+    private RecyclerView recyclerView;
+    private EditText etSearch;
+    private Button btnFavoris;
+    private ImageButton fabAdd;
+    private LinearLayout colorPaletteLayout;
+    private TextView tvEmpty;
+
+    private NoteAdapter adapter;
+
+    private NoteDao noteDao;
+
+    private LiveData<List<Note>> currentSource;
+
+    private boolean showFavoritesOnly = false;
+    private boolean isPaletteOpen = false;
+
+    // Palette de couleurs
+    private static final String[] PALETTE_COLORS = {
+            "#219653",  // Vert
+            "#EB5757",  // Rouge
+            "#2F80ED",  // Bleu
+            "#F2C94C",  // Jaune
+            "#F2994A",  // Orange
+            "#828282"   // Gris
+    };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
+
+        // On recupere l'instance de connection a la base de données
+        noteDao = AppDatabase.getInstance(this).noteDao();
+
+        initViews();
+
+        setupRecyclerView();
+
+        setupSearch();
+        setupFavorisButton();
+        setupFAB();
+    }
+
+    //Initialise les références aux vues du layout.
+    private void initViews() {
+        recyclerView = findViewById(R.id.recyclerView);
+        etSearch = findViewById(R.id.etSearch);
+        btnFavoris = findViewById(R.id.btnFavoris);
+        fabAdd = findViewById(R.id.fabAdd);
+        colorPaletteLayout = findViewById(R.id.colorPaletteLayout);
+        tvEmpty = findViewById(R.id.tvEmpty);
+    }
+
+
+    // Recherche en temps réel : filtre la liste à chaque frappe.
+    private void setupSearch() {
+        etSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                loadNotes();
+            }
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void afterTextChanged(Editable s) {}
         });
     }
+
+
+     // Bouton Favoris : bascule le filtre + met à jour l'apparence du bouton.
+    private void setupFavorisButton() {
+        btnFavoris.setOnClickListener(v -> {
+            showFavoritesOnly = !showFavoritesOnly;
+
+            if (showFavoritesOnly) {
+                // Etat actif : fond noir, texte blanc
+                btnFavoris.setBackgroundColor(Color.BLACK);
+                btnFavoris.setTextColor(Color.WHITE);
+            } else {
+                // Etat inactif : transparent, texte noir
+                btnFavoris.setBackgroundColor(Color.TRANSPARENT);
+                btnFavoris.setTextColor(Color.BLACK);
+            }
+
+            loadNotes();
+        });
+    }
+
+
+    // FAB + palette de couleurs.
+    private void setupFAB() {
+        // Toggle affichage de la palette au clic sur le FAB
+        fabAdd.setOnClickListener(v -> {
+            isPaletteOpen = !isPaletteOpen;
+            colorPaletteLayout.setVisibility(isPaletteOpen ? View.VISIBLE : View.GONE);
+        });
+
+        // IDs des pastilles dans le même ordre que PALETTE_COLORS[]
+        int[] dotIds = {
+                R.id.colorGreen,
+                R.id.colorRed,
+                R.id.colorBlue,
+                R.id.colorYellow,
+                R.id.colorOrange,
+                R.id.colorGray
+        };
+
+        for (int i = 0; i < dotIds.length; i++) {
+            final String color = PALETTE_COLORS[i];
+            findViewById(dotIds[i]).setOnClickListener(v -> {
+                // Fermer la palette avant de naviguer
+                colorPaletteLayout.setVisibility(View.GONE);
+                isPaletteOpen = false;
+                navigateToCreate(color);
+            });
+        }
+    }
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Toujours fermer la palette au retour sur cet écran
+        isPaletteOpen = false;
+        colorPaletteLayout.setVisibility(View.GONE);
+
+        loadNotes();
+    }
+
+    private void loadNotes() {
+        String query = etSearch.getText().toString().trim();
+
+        if(currentSource != null){
+            currentSource.removeObservers(this);
+        }
+
+         if (showFavoritesOnly) {
+             currentSource =  noteDao.getFavorites();
+         } else if (!query.isEmpty()) {
+             currentSource = noteDao.searchByTitle(query);
+         } else {
+             currentSource = noteDao.getAllNotes();
+         }
+
+         currentSource.observe(this, notes -> updateUI(notes));
+    }
+
+    private void setupRecyclerView() {
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        adapter = new NoteAdapter(new ArrayList<>(), this);
+        recyclerView.setAdapter(adapter);
+    }
+
+    private void navigateToCreate(String color) {
+         Intent intent = new Intent(this, NoteFormActivity.class);
+         intent.putExtra(NoteFormActivity.EXTRA_COLOR, color);
+         startActivity(intent);
+    }
+
+
+     private void updateUI(List<Note> notes) {
+         adapter.updateList(notes);
+         boolean isEmpty = notes.isEmpty();
+         tvEmpty.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+         recyclerView.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+     }
+
+     @Override
+     public void onNoteClick(Note note) {
+         Intent intent = new Intent(this, NoteFormActivity.class);
+         intent.putExtra(NoteFormActivity.EXTRA_NOTE_ID, note.getId());
+         intent.putExtra(NoteFormActivity.EXTRA_COLOR, note.getColor());
+         startActivity(intent);
+     }
+
+
+     @Override
+     public void onNoteDoubleClick(Note note) {
+         noteDao.toggleFavorite(note.getId(), !note.isFavorite());
+     }
 }
