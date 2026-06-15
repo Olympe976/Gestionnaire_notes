@@ -26,6 +26,9 @@ public class NoteFormActivity extends AppCompatActivity {
     private String color;
     private int noteId = -1;
     private boolean isEditMode = false;
+    private boolean currentFavorite = false;
+
+    private LinearLayout colorEditPalette;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +45,7 @@ public class NoteFormActivity extends AppCompatActivity {
         btnSave = findViewById(R.id.btnSave);
         formContainer = findViewById(R.id.formContainer);
         noteDao = AppDatabase.getInstance(this).noteDao();
+        colorEditPalette = findViewById(R.id.colorEditPalette);
     }
 
     private void readIntentAndSetupMode() {
@@ -57,6 +61,8 @@ public class NoteFormActivity extends AppCompatActivity {
             isEditMode = true;
             btnSave.setText("Modifier");
             loadNoteData(noteId);
+            colorEditPalette.setVisibility(android.view.View.VISIBLE);
+            setupColorEditPalette();
         } else {
             isEditMode = false;
             btnSave.setText("Créer");
@@ -70,6 +76,22 @@ public class NoteFormActivity extends AppCompatActivity {
         if (note != null) {
             etTitle.setText(note.getTitle());
             etContent.setText(note.getContent());
+            currentFavorite = note.isFavorite();
+        }
+    }
+
+    private void setupColorEditPalette() {
+        int[] ids = {R.id.colorEdit1, R.id.colorEdit2, R.id.colorEdit3,
+                R.id.colorEdit4, R.id.colorEdit5, R.id.colorEdit6};
+        String[] colors = {"#000000", "#828282", "#219653",
+                "#EB5757", "#2F80ED", "#F2C94C"};
+
+        for (int i = 0; i < ids.length; i++) {
+            final String selectedColor = colors[i];
+            findViewById(ids[i]).setOnClickListener(v -> {
+                color = selectedColor;
+                formContainer.setBackgroundColor(Color.parseColor(color));
+            });
         }
     }
 
@@ -90,8 +112,11 @@ public class NoteFormActivity extends AppCompatActivity {
         }
 
         String date = new SimpleDateFormat("dd MMMM yyyy", Locale.FRENCH).format(new Date());
+        String[] parts = date.split(" ");
+        parts[1] = parts[1].substring(0, 1).toUpperCase() + parts[1].substring(1);
+        date = parts[0] + " " + parts[1] + " " + parts[2];
 
-        Note note = new Note(title, content, color, false, date);
+        Note note = new Note(title, content, color, currentFavorite, date);
 
         if (isEditMode) {
             note.setId(noteId);
