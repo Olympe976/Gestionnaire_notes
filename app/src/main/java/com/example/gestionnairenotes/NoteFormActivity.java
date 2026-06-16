@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -157,8 +158,10 @@ public class NoteFormActivity extends AppCompatActivity {
         if (isEditMode) {
             note.setId(noteId);
             noteDao.update(note);
+            Toast.makeText(this, "Note modifiée", Toast.LENGTH_SHORT).show();
         } else {
             noteDao.insert(note);
+            Toast.makeText(this, "Note créée", Toast.LENGTH_SHORT).show();
         }
 
         finish();

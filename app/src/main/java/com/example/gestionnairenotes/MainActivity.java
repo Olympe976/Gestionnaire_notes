@@ -8,7 +8,6 @@ import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -23,6 +22,8 @@ import androidx.lifecycle.LiveData;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,7 +33,7 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnNot
     private RecyclerView recyclerView;
     private EditText etSearch;
     private Button btnFavoris;
-    private ImageButton fabAdd;
+    private FloatingActionButton fabAdd;
     private LinearLayout colorPaletteLayout;
     private TextView tvEmpty;
 
