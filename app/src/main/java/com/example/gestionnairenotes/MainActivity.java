@@ -11,6 +11,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -225,6 +226,10 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnNot
 
      @Override
      public void onNoteDoubleClick(Note note) {
-         noteDao.toggleFavorite(note.getId(), !note.isFavorite());
+         boolean nouvelEtat = !note.isFavorite();
+         noteDao.toggleFavorite(note.getId(), nouvelEtat);
+         Toast.makeText(this,
+                 nouvelEtat ? "Ajoutée aux favoris" : "Retirée des favoris",
+                 Toast.LENGTH_SHORT).show();
      }
 }
