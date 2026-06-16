@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/mainRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#FFFFFF"
@@ -28,6 +29,10 @@
             android:background="@drawable/bg_search_rounded"
             android:inputType="text"
             android:maxLines="1"
+            android:textColor="#1A1A1A"
+            android:textColorHint="#9A9A9A"
+            android:textSize="15sp"
+            android:textCursorDrawable="@null"
             android:imeOptions="actionSearch" />
 
         <Button
