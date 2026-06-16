@@ -77,14 +77,14 @@ public class NoteFormActivity extends AppCompatActivity {
             etTitle.setText(note.getTitle());
             etContent.setText(note.getContent());
             currentFavorite = note.isFavorite();
+            currentCreatedAt = note.getCreatedAt();
         }
     }
 
     private void setupColorEditPalette() {
         int[] ids = {R.id.colorEdit1, R.id.colorEdit2, R.id.colorEdit3,
                 R.id.colorEdit4, R.id.colorEdit5, R.id.colorEdit6};
-        String[] colors = {"#000000", "#828282", "#219653",
-                "#EB5757", "#2F80ED", "#F2C94C"};
+        String[] colors = {"#219653", "#EB5757", "#2F80ED", "#F2C94C", "#F2994A", "#828282"};
 
         for (int i = 0; i < ids.length; i++) {
             final String selectedColor = colors[i];
@@ -95,6 +95,7 @@ public class NoteFormActivity extends AppCompatActivity {
         }
     }
 
+    private String currentCreatedAt = "";
     private void saveNote() {
         String title = etTitle.getText().toString().trim();
         String content = etContent.getText().toString().trim();
@@ -111,11 +112,15 @@ public class NoteFormActivity extends AppCompatActivity {
             return;
         }
 
-        String date = new SimpleDateFormat("dd MMMM yyyy", Locale.FRENCH).format(new Date());
-        String[] parts = date.split(" ");
-        parts[1] = parts[1].substring(0, 1).toUpperCase() + parts[1].substring(1);
-        date = parts[0] + " " + parts[1] + " " + parts[2];
-
+        String date;
+        if (isEditMode) {
+            date = currentCreatedAt;
+        } else {
+            date = new SimpleDateFormat("dd MMMM yyyy", Locale.FRENCH).format(new Date());
+            String[] parts = date.split(" ");
+            parts[1] = parts[1].substring(0, 1).toUpperCase() + parts[1].substring(1);
+            date = parts[0] + " " + parts[1] + " " + parts[2];
+        }
         Note note = new Note(title, content, color, currentFavorite, date);
 
         if (isEditMode) {
