@@ -12,6 +12,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -236,4 +237,19 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnNot
                  nouvelEtat ? "Ajoutée aux favoris" : "Retirée des favoris",
                  Toast.LENGTH_SHORT).show();
      }
+
+    @Override
+    public void onNoteLongClick(Note note) {
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.delete_title)
+                .setMessage(R.string.delete_message)
+                .setPositiveButton(R.string.delete_confirm, (dialog, which) -> {
+                    noteDao.delete(note);
+                    Toast.makeText(this,
+                            R.string.delete_done,
+                            Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton(R.string.delete_cancel, null)
+                .show();
+    }
 }

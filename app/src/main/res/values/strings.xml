@@ -11,4 +11,9 @@
     <string name="note_counter">%d note(s)</string>
     <string name="btn_partager">Partager</string>
     <string name="share_chooser_title">Partager via</string>
+    <string name="delete_title">Supprimer la note</string>
+    <string name="delete_message">Êtes-vous sûr de vouloir supprimer cette note ?</string>
+    <string name="delete_confirm">Supprimer</string>
+    <string name="delete_cancel">Annuler</string>
+    <string name="delete_done">Note supprimée</string>
 </resources>
