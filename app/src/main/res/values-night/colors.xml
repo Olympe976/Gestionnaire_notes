@@ -2,4 +2,5 @@
 <resources>
     <color name="app_background">#2A2A2A</color>
     <color name="app_text">#FFFFFF</color>
+    <color name="app_search_bg">#3A3A3A</color>
 </resources>

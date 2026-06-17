@@ -10,4 +10,5 @@
     <color name="orange">#F2994A</color>
     <color name="app_background">#FFFFFF</color>
     <color name="app_text">#000000</color>
+    <color name="app_search_bg">#F0F0F0</color>
 </resources>

@@ -36,17 +36,6 @@
             android:textCursorDrawable="@null"
             android:imeOptions="actionSearch" />
 
-        <TextView
-            android:id="@+id/tvNoteCount"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/topBar"
-            android:layout_marginTop="4dp"
-            android:layout_marginBottom="4dp"
-            android:textSize="12sp"
-            android:textColor="#828282"
-            android:textStyle="italic" />
-
         <Button
             android:id="@+id/btnFavoris"
             android:layout_width="wrap_content"
@@ -76,6 +65,17 @@
             android:contentDescription="@string/btn_trier" />
     </LinearLayout>
 
+    <TextView
+        android:id="@+id/tvNoteCount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/topBar"
+        android:layout_marginTop="4dp"
+        android:gravity="center"
+        android:textSize="12sp"
+        android:textColor="#828282"
+        android:textStyle="italic" />
+
     <!-- Aucune notes -->
     <TextView
         android:id="@+id/tvEmpty"
@@ -92,7 +92,7 @@
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/topBar"
+        android:layout_below="@id/tvNoteCount"
         android:layout_above="@id/fabAdd"
         android:layout_marginBottom="8dp"
         android:clipToPadding="false"
@@ -164,8 +164,8 @@
         android:layout_margin="4dp"
         android:src="@android:drawable/ic_input_add"
         android:contentDescription="Ajouter une note"
-        app:backgroundTint="#000000"
-        app:tint="#FFFFFF" />
+        app:backgroundTint="@color/app_text"
+        app:tint="@color/app_background" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabTheme"
@@ -176,6 +176,6 @@
         android:layout_margin="4dp"
         android:src="@drawable/ic_moon"
         android:contentDescription="Changer de thème"
-        app:backgroundTint="#000000"
-        app:tint="#FFFFFF" />
+        app:backgroundTint="@color/app_text"
+        app:tint="@color/app_background" />
 </RelativeLayout>

@@ -217,22 +217,22 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnNot
             currentSource.removeObservers(this);
         }
 
-         if (showFavoritesOnly) {
-             currentSource =  noteDao.getFavorites();
-         } else if (!query.isEmpty()) {
-             currentSource = noteDao.searchByTitle(query);
-         } else {
-             switch (currentSort) {
-                 case OLDEST:
-                     currentSource = noteDao.getAllNotesOldest();
-                     break;
-                 case ALPHABETICAL:
-                     currentSource = noteDao.getAllNotesByTitle();
-                     break;
-                 default: // NEWEST
-                     currentSource = noteDao.getAllNotes();
-             }
-         }
+        if (showFavoritesOnly) {
+            currentSource = noteDao.getFavorites();
+        } else if (!query.isEmpty()) {
+            currentSource = noteDao.searchByTitle(query);
+        } else {
+            switch (currentSort) {
+                case OLDEST:
+                    currentSource = noteDao.getAllNotesOldest();
+                    break;
+                case ALPHABETICAL:
+                    currentSource = noteDao.getAllNotesByTitle();
+                    break;
+                default:
+                    currentSource = noteDao.getAllNotes();
+            }
+        }
 
          currentSource.observe(this, notes -> updateUI(notes));
     }
