@@ -1,6 +1,7 @@
 package com.example.gestionnairenotes;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
@@ -12,7 +13,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
@@ -37,6 +41,7 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnNot
     private LinearLayout colorPaletteLayout;
     private TextView tvEmpty;
 
+    private TextView tvNoteCount;
     private NoteAdapter adapter;
 
     private NoteDao noteDao;
@@ -56,10 +61,23 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnNot
             "#828282"   // Gris
     };
 
+    private enum SortType { NEWEST, OLDEST, ALPHABETICAL }
+    private SortType currentSort = SortType.NEWEST;
+    private Button btnSort;
+
+    private FloatingActionButton fabTheme;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Restaurer le theme AVANT setContentView
+        SharedPreferences prefs = getSharedPreferences("app_prefs", MODE_PRIVATE);
+        boolean isDark = prefs.getBoolean("dark_mode", false);
+        AppCompatDelegate.setDefaultNightMode(
+                isDark ? AppCompatDelegate.MODE_NIGHT_YES
+                        : AppCompatDelegate.MODE_NIGHT_NO);
+
         setContentView(R.layout.activity_main);
 
         // Evite que les barres systeme (statut en haut, navigation en bas) cachent le contenu
@@ -75,6 +93,9 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnNot
         setupSearch();
         setupFavorisButton();
         setupFAB();
+
+        setupSortButton();
+        setupThemeToggle();
     }
 
     // Reserve la place des barres systeme et garde des icones de statut lisibles sur fond clair.
@@ -90,8 +111,10 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnNot
 
         WindowInsetsControllerCompat controller =
                 WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
-        controller.setAppearanceLightStatusBars(true);
-        controller.setAppearanceLightNavigationBars(true);
+        SharedPreferences prefs = getSharedPreferences("app_prefs", MODE_PRIVATE);
+        boolean isDark = prefs.getBoolean("dark_mode", false);
+        controller.setAppearanceLightStatusBars(!isDark);
+        controller.setAppearanceLightNavigationBars(!isDark);
     }
 
     //Initialise les références aux vues du layout.
@@ -102,6 +125,9 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnNot
         fabAdd = findViewById(R.id.fabAdd);
         colorPaletteLayout = findViewById(R.id.colorPaletteLayout);
         tvEmpty = findViewById(R.id.tvEmpty);
+        tvNoteCount = findViewById(R.id.tvNoteCount);
+        btnSort = findViewById(R.id.btnSort);
+        fabTheme = findViewById(R.id.fabTheme);
     }
 
 
@@ -122,19 +148,25 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnNot
     private void setupFavorisButton() {
         btnFavoris.setOnClickListener(v -> {
             showFavoritesOnly = !showFavoritesOnly;
-
-            if (showFavoritesOnly) {
-                // Etat actif : fond noir, texte blanc
-                btnFavoris.setBackgroundColor(Color.BLACK);
-                btnFavoris.setTextColor(Color.WHITE);
-            } else {
-                // Etat inactif : transparent, texte noir
-                btnFavoris.setBackgroundColor(Color.TRANSPARENT);
-                btnFavoris.setTextColor(Color.BLACK);
-            }
-
+            applyFavorisStyle();
             loadNotes();
         });
+    }
+
+    private void applyFavorisStyle() {
+        boolean isNight = (getResources().getConfiguration().uiMode
+                & android.content.res.Configuration.UI_MODE_NIGHT_MASK)
+                == android.content.res.Configuration.UI_MODE_NIGHT_YES;
+
+        if (showFavoritesOnly) {
+            // Actif : fond contrasté + texte inversé (s'adapte au mode)
+            btnFavoris.setBackgroundColor(isNight ? Color.WHITE : Color.BLACK);
+            btnFavoris.setTextColor(isNight ? Color.BLACK : Color.WHITE);
+        } else {
+            // Inactif : transparent + texte qui suit le thème
+            btnFavoris.setBackgroundColor(Color.TRANSPARENT);
+            btnFavoris.setTextColor(getColor(R.color.app_text));
+        }
     }
 
 
@@ -190,7 +222,16 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnNot
          } else if (!query.isEmpty()) {
              currentSource = noteDao.searchByTitle(query);
          } else {
-             currentSource = noteDao.getAllNotes();
+             switch (currentSort) {
+                 case OLDEST:
+                     currentSource = noteDao.getAllNotesOldest();
+                     break;
+                 case ALPHABETICAL:
+                     currentSource = noteDao.getAllNotesByTitle();
+                     break;
+                 default: // NEWEST
+                     currentSource = noteDao.getAllNotes();
+             }
          }
 
          currentSource.observe(this, notes -> updateUI(notes));
@@ -214,6 +255,7 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnNot
          boolean isEmpty = notes.isEmpty();
          tvEmpty.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
          recyclerView.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+         tvNoteCount.setText(getString(R.string.note_counter, notes.size()));
      }
 
      @Override
@@ -233,4 +275,54 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnNot
                  nouvelEtat ? "Ajoutée aux favoris" : "Retirée des favoris",
                  Toast.LENGTH_SHORT).show();
      }
+
+    @Override
+    public void onNoteLongClick(Note note) {
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.delete_title)
+                .setMessage(R.string.delete_message)
+                .setPositiveButton(R.string.delete_confirm, (dialog, which) -> {
+                    noteDao.delete(note);
+                    Toast.makeText(this,
+                            R.string.delete_done,
+                            Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton(R.string.delete_cancel, null)
+                .show();
+    }
+
+    private void setupSortButton() {
+        btnSort.setOnClickListener(v -> {
+            PopupMenu popup = new PopupMenu(this, btnSort);
+            popup.getMenuInflater().inflate(R.menu.sort_menu, popup.getMenu());
+            popup.setOnMenuItemClickListener(item -> {
+                int id = item.getItemId();
+                if (id == R.id.sort_newest) {
+                    currentSort = SortType.NEWEST;
+                } else if (id == R.id.sort_oldest) {
+                    currentSort = SortType.OLDEST;
+                } else if (id == R.id.sort_alpha) {
+                    currentSort = SortType.ALPHABETICAL;
+                }
+                loadNotes(); // recharge avec le nouveau tri
+                return true;
+            });
+            popup.show();
+        });
+    }
+
+    private void setupThemeToggle() {
+        SharedPreferences prefs = getSharedPreferences("app_prefs", MODE_PRIVATE);
+        boolean isDark = prefs.getBoolean("dark_mode", false);
+        fabTheme.setImageResource(isDark ? R.drawable.ic_sun : R.drawable.ic_moon);
+
+        fabTheme.setOnClickListener(v -> {
+            boolean newDark = !prefs.getBoolean("dark_mode", false);
+            prefs.edit().putBoolean("dark_mode", newDark).apply();
+            AppCompatDelegate.setDefaultNightMode(
+                    newDark ? AppCompatDelegate.MODE_NIGHT_YES
+                            : AppCompatDelegate.MODE_NIGHT_NO);
+            recreate();
+        });
+    }
 }

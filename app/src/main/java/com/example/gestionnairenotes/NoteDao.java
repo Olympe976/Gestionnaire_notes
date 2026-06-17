@@ -28,6 +28,11 @@ public interface NoteDao {
     @Query("SELECT * FROM notes ORDER BY id DESC")
     LiveData<List<Note>> getAllNotes();
 
+    @Query("SELECT * FROM notes ORDER BY id ASC")
+    LiveData<List<Note>> getAllNotesOldest();
+    @Query("SELECT * FROM notes ORDER BY title COLLATE NOCASE ASC")
+    LiveData<List<Note>> getAllNotesByTitle();
+
     @Query("SELECT * FROM notes WHERE isFavorite = 1 ORDER BY id DESC")
     LiveData<List<Note>> getFavorites();
 

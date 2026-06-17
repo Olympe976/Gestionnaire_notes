@@ -31,7 +31,7 @@ public class NoteFormActivity extends AppCompatActivity {
     private LinearLayout formContainer;
     private LinearLayout colorEditPalette;
     private NoteDao noteDao;
-
+    private Button btnShare;
     private String color = "#219653";
     private int noteId = -1;
     private boolean isEditMode = false;
@@ -60,8 +60,11 @@ public class NoteFormActivity extends AppCompatActivity {
 
         WindowInsetsControllerCompat controller =
                 WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
-        controller.setAppearanceLightStatusBars(true);
-        controller.setAppearanceLightNavigationBars(true);
+        boolean isNight = (getResources().getConfiguration().uiMode
+                & android.content.res.Configuration.UI_MODE_NIGHT_MASK)
+                == android.content.res.Configuration.UI_MODE_NIGHT_YES;
+        controller.setAppearanceLightStatusBars(!isNight);
+        controller.setAppearanceLightNavigationBars(!isNight);
     }
 
     private void initViews() {
@@ -71,6 +74,7 @@ public class NoteFormActivity extends AppCompatActivity {
         formContainer = findViewById(R.id.formContainer);
         colorEditPalette = findViewById(R.id.colorEditPalette);
         noteDao = AppDatabase.getInstance(this).noteDao();
+        btnShare = findViewById(R.id.btnShare);
     }
 
     private void readIntentAndSetupMode() {
@@ -88,12 +92,32 @@ public class NoteFormActivity extends AppCompatActivity {
             isEditMode = true;
             btnSave.setText("Modifier");
             loadNoteData(noteId);
+            btnShare.setVisibility(View.VISIBLE);
+            btnShare.setOnClickListener(v ->
+                    shareNote());
         } else {
             isEditMode = false;
             btnSave.setText("Créer");
         }
 
         btnSave.setOnClickListener(v -> saveNote());
+    }
+
+    private void shareNote(){
+        String title = etTitle.getText().toString().trim();
+        String content = etContent.getText().toString().trim();
+
+        // Construire le texte a partager
+        String shareText = title + "\n\n" + content;
+
+        // Intent implicite : Android demande quelle app utiliser
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.setType("text/plain");
+        shareIntent.putExtra(Intent.EXTRA_SUBJECT, title);
+        shareIntent.putExtra(Intent.EXTRA_TEXT, shareText);
+        // Lance le selecteur d'apps natif d'Android
+        startActivity(Intent.createChooser(shareIntent,
+                getString(R.string.share_chooser_title)));
     }
 
     private void loadNoteData(int id) {

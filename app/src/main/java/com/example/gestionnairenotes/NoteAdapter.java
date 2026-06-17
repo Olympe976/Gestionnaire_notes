@@ -21,6 +21,7 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder
     public interface OnNoteInteractionListener {
         void onNoteClick(Note note);
         void onNoteDoubleClick(Note note);
+        void onNoteLongClick(Note note);
     }
 
     private List<Note> noteList;
@@ -83,6 +84,11 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder
                 singleClickRunnable = () -> listener.onNoteClick(note);
                 handler.postDelayed(singleClickRunnable, 300);
             }
+        });
+
+        holder.itemView.setOnLongClickListener(v -> {
+            listener.onNoteLongClick(note);
+            return true; // consomme l'evenement (evite le simple clic apres)
         });
     }
 
