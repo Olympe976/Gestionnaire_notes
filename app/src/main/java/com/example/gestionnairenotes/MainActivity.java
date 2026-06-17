@@ -1,6 +1,7 @@
 package com.example.gestionnairenotes;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
@@ -14,6 +15,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -63,9 +65,19 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnNot
     private SortType currentSort = SortType.NEWEST;
     private Button btnSort;
 
+    private FloatingActionButton fabTheme;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Restaurer le theme AVANT setContentView
+        SharedPreferences prefs = getSharedPreferences("app_prefs", MODE_PRIVATE);
+        boolean isDark = prefs.getBoolean("dark_mode", false);
+        AppCompatDelegate.setDefaultNightMode(
+                isDark ? AppCompatDelegate.MODE_NIGHT_YES
+                        : AppCompatDelegate.MODE_NIGHT_NO);
+
         setContentView(R.layout.activity_main);
 
         // Evite que les barres systeme (statut en haut, navigation en bas) cachent le contenu
@@ -83,6 +95,7 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnNot
         setupFAB();
 
         setupSortButton();
+        setupThemeToggle();
     }
 
     // Reserve la place des barres systeme et garde des icones de statut lisibles sur fond clair.
@@ -98,8 +111,10 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnNot
 
         WindowInsetsControllerCompat controller =
                 WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
-        controller.setAppearanceLightStatusBars(true);
-        controller.setAppearanceLightNavigationBars(true);
+        SharedPreferences prefs = getSharedPreferences("app_prefs", MODE_PRIVATE);
+        boolean isDark = prefs.getBoolean("dark_mode", false);
+        controller.setAppearanceLightStatusBars(!isDark);
+        controller.setAppearanceLightNavigationBars(!isDark);
     }
 
     //Initialise les références aux vues du layout.
@@ -112,6 +127,7 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnNot
         tvEmpty = findViewById(R.id.tvEmpty);
         tvNoteCount = findViewById(R.id.tvNoteCount);
         btnSort = findViewById(R.id.btnSort);
+        fabTheme = findViewById(R.id.fabTheme);
     }
 
 
@@ -132,19 +148,25 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnNot
     private void setupFavorisButton() {
         btnFavoris.setOnClickListener(v -> {
             showFavoritesOnly = !showFavoritesOnly;
-
-            if (showFavoritesOnly) {
-                // Etat actif : fond noir, texte blanc
-                btnFavoris.setBackgroundColor(Color.BLACK);
-                btnFavoris.setTextColor(Color.WHITE);
-            } else {
-                // Etat inactif : transparent, texte noir
-                btnFavoris.setBackgroundColor(Color.TRANSPARENT);
-                btnFavoris.setTextColor(Color.BLACK);
-            }
-
+            applyFavorisStyle();
             loadNotes();
         });
+    }
+
+    private void applyFavorisStyle() {
+        boolean isNight = (getResources().getConfiguration().uiMode
+                & android.content.res.Configuration.UI_MODE_NIGHT_MASK)
+                == android.content.res.Configuration.UI_MODE_NIGHT_YES;
+
+        if (showFavoritesOnly) {
+            // Actif : fond contrasté + texte inversé (s'adapte au mode)
+            btnFavoris.setBackgroundColor(isNight ? Color.WHITE : Color.BLACK);
+            btnFavoris.setTextColor(isNight ? Color.BLACK : Color.WHITE);
+        } else {
+            // Inactif : transparent + texte qui suit le thème
+            btnFavoris.setBackgroundColor(Color.TRANSPARENT);
+            btnFavoris.setTextColor(getColor(R.color.app_text));
+        }
     }
 
 
@@ -286,6 +308,21 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnNot
                 return true;
             });
             popup.show();
+        });
+    }
+
+    private void setupThemeToggle() {
+        SharedPreferences prefs = getSharedPreferences("app_prefs", MODE_PRIVATE);
+        boolean isDark = prefs.getBoolean("dark_mode", false);
+        fabTheme.setImageResource(isDark ? R.drawable.ic_sun : R.drawable.ic_moon);
+
+        fabTheme.setOnClickListener(v -> {
+            boolean newDark = !prefs.getBoolean("dark_mode", false);
+            prefs.edit().putBoolean("dark_mode", newDark).apply();
+            AppCompatDelegate.setDefaultNightMode(
+                    newDark ? AppCompatDelegate.MODE_NIGHT_YES
+                            : AppCompatDelegate.MODE_NIGHT_NO);
+            recreate();
         });
     }
 }
