@@ -37,6 +37,7 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnNot
     private LinearLayout colorPaletteLayout;
     private TextView tvEmpty;
 
+    private TextView tvNoteCount;
     private NoteAdapter adapter;
 
     private NoteDao noteDao;
@@ -102,6 +103,7 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnNot
         fabAdd = findViewById(R.id.fabAdd);
         colorPaletteLayout = findViewById(R.id.colorPaletteLayout);
         tvEmpty = findViewById(R.id.tvEmpty);
+        tvNoteCount = findViewById(R.id.tvNoteCount);
     }
 
 
@@ -214,6 +216,7 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnNot
          boolean isEmpty = notes.isEmpty();
          tvEmpty.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
          recyclerView.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+         tvNoteCount.setText(getString(R.string.note_counter, notes.size()));
      }
 
      @Override

@@ -36,6 +36,17 @@
             android:textCursorDrawable="@null"
             android:imeOptions="actionSearch" />
 
+        <TextView
+            android:id="@+id/tvNoteCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/topBar"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
+            android:textSize="12sp"
+            android:textColor="#828282"
+            android:textStyle="italic" />
+
         <Button
             android:id="@+id/btnFavoris"
             android:layout_width="wrap_content"
