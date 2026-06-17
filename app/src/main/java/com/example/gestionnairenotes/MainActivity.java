@@ -14,6 +14,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
@@ -58,6 +59,9 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnNot
             "#828282"   // Gris
     };
 
+    private enum SortType { NEWEST, OLDEST, ALPHABETICAL }
+    private SortType currentSort = SortType.NEWEST;
+    private Button btnSort;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,6 +81,8 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnNot
         setupSearch();
         setupFavorisButton();
         setupFAB();
+
+        setupSortButton();
     }
 
     // Reserve la place des barres systeme et garde des icones de statut lisibles sur fond clair.
@@ -105,6 +111,7 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnNot
         colorPaletteLayout = findViewById(R.id.colorPaletteLayout);
         tvEmpty = findViewById(R.id.tvEmpty);
         tvNoteCount = findViewById(R.id.tvNoteCount);
+        btnSort = findViewById(R.id.btnSort);
     }
 
 
@@ -193,7 +200,16 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnNot
          } else if (!query.isEmpty()) {
              currentSource = noteDao.searchByTitle(query);
          } else {
-             currentSource = noteDao.getAllNotes();
+             switch (currentSort) {
+                 case OLDEST:
+                     currentSource = noteDao.getAllNotesOldest();
+                     break;
+                 case ALPHABETICAL:
+                     currentSource = noteDao.getAllNotesByTitle();
+                     break;
+                 default: // NEWEST
+                     currentSource = noteDao.getAllNotes();
+             }
          }
 
          currentSource.observe(this, notes -> updateUI(notes));
@@ -251,5 +267,25 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnNot
                 })
                 .setNegativeButton(R.string.delete_cancel, null)
                 .show();
+    }
+
+    private void setupSortButton() {
+        btnSort.setOnClickListener(v -> {
+            PopupMenu popup = new PopupMenu(this, btnSort);
+            popup.getMenuInflater().inflate(R.menu.sort_menu, popup.getMenu());
+            popup.setOnMenuItemClickListener(item -> {
+                int id = item.getItemId();
+                if (id == R.id.sort_newest) {
+                    currentSort = SortType.NEWEST;
+                } else if (id == R.id.sort_oldest) {
+                    currentSort = SortType.OLDEST;
+                } else if (id == R.id.sort_alpha) {
+                    currentSort = SortType.ALPHABETICAL;
+                }
+                loadNotes(); // recharge avec le nouveau tri
+                return true;
+            });
+            popup.show();
+        });
     }
 }

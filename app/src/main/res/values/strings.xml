@@ -16,4 +16,8 @@
     <string name="delete_confirm">Supprimer</string>
     <string name="delete_cancel">Annuler</string>
     <string name="delete_done">Note supprimée</string>
+    <string name="btn_trier">Trier</string>
+    <string name="sort_newest">Plus récentes</string>
+    <string name="sort_oldest">Plus anciennes</string>
+    <string name="sort_alpha">Alphabétique (A → Z)</string>
 </resources>
