@@ -67,6 +67,23 @@
     </ScrollView>
 
     <Button
+        android:id="@+id/btnShare"
+        android:layout_width="wrap_content"
+        android:layout_height="56dp"
+        android:layout_gravity="end"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="4dp"
+        android:paddingStart="28dp"
+        android:paddingEnd="28dp"
+        android:text="@string/btn_partager"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:backgroundTint="#000000"
+        app:cornerRadius="16dp"
+        android:visibility="gone" />
+
+    <Button
         android:id="@+id/btnSave"
         android:layout_width="match_parent"
         android:layout_height="56dp"
