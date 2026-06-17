@@ -2,12 +2,20 @@ package com.example.gestionnairenotes;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -21,22 +29,39 @@ public class NoteFormActivity extends AppCompatActivity {
     private EditText etTitle, etContent;
     private Button btnSave;
     private LinearLayout formContainer;
+    private LinearLayout colorEditPalette;
     private NoteDao noteDao;
 
-    private String color;
+    private String color = "#219653";
     private int noteId = -1;
     private boolean isEditMode = false;
     private boolean currentFavorite = false;
-
-    private LinearLayout colorEditPalette;
+    private String currentCreatedAt = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_note_form);
 
+        setupSystemBars();
         initViews();
         readIntentAndSetupMode();
+    }
+
+    private void setupSystemBars() {
+        View root = findViewById(R.id.formRoot);
+        int base = (int) (16 * getResources().getDisplayMetrics().density);
+
+        ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
+            Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(base + bars.left, base + bars.top, base + bars.right, base + bars.bottom);
+            return insets;
+        });
+
+        WindowInsetsControllerCompat controller =
+                WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+        controller.setAppearanceLightStatusBars(true);
+        controller.setAppearanceLightNavigationBars(true);
     }
 
     private void initViews() {
@@ -44,25 +69,25 @@ public class NoteFormActivity extends AppCompatActivity {
         etContent = findViewById(R.id.etContent);
         btnSave = findViewById(R.id.btnSave);
         formContainer = findViewById(R.id.formContainer);
-        noteDao = AppDatabase.getInstance(this).noteDao();
         colorEditPalette = findViewById(R.id.colorEditPalette);
+        noteDao = AppDatabase.getInstance(this).noteDao();
     }
 
     private void readIntentAndSetupMode() {
         Intent intent = getIntent();
-        color = intent.getStringExtra(EXTRA_COLOR);
+        String colorExtra = intent.getStringExtra(EXTRA_COLOR);
+        if (colorExtra != null) {
+            color = colorExtra;
+        }
         noteId = intent.getIntExtra(EXTRA_NOTE_ID, -1);
 
-        if (color != null) {
-            formContainer.setBackgroundColor(Color.parseColor(color));
-        }
+        applyFormColor(color);
+        setupColorEditPalette();
 
         if (noteId != -1) {
             isEditMode = true;
             btnSave.setText("Modifier");
             loadNoteData(noteId);
-            colorEditPalette.setVisibility(android.view.View.VISIBLE);
-            setupColorEditPalette();
         } else {
             isEditMode = false;
             btnSave.setText("Créer");
@@ -84,18 +109,24 @@ public class NoteFormActivity extends AppCompatActivity {
     private void setupColorEditPalette() {
         int[] ids = {R.id.colorEdit1, R.id.colorEdit2, R.id.colorEdit3,
                 R.id.colorEdit4, R.id.colorEdit5, R.id.colorEdit6};
-        String[] colors = {"#219653", "#EB5757", "#2F80ED", "#F2C94C", "#F2994A", "#828282"};
+        String[] palette = {"#219653", "#EB5757", "#2F80ED", "#F2C94C", "#F2994A", "#828282"};
 
         for (int i = 0; i < ids.length; i++) {
-            final String selectedColor = colors[i];
-            findViewById(ids[i]).setOnClickListener(v -> {
-                color = selectedColor;
-                formContainer.setBackgroundColor(Color.parseColor(color));
-            });
+            final String chosen = palette[i];
+            findViewById(ids[i]).setOnClickListener(v -> applyFormColor(chosen));
         }
     }
 
-    private String currentCreatedAt = "";
+    // Applique la couleur sur la carte en gardant les coins arrondis.
+    private void applyFormColor(String hex) {
+        color = hex;
+        float radius = 18 * getResources().getDisplayMetrics().density;
+        GradientDrawable bg = new GradientDrawable();
+        bg.setColor(Color.parseColor(hex));
+        bg.setCornerRadius(radius);
+        formContainer.setBackground(bg);
+    }
+
     private void saveNote() {
         String title = etTitle.getText().toString().trim();
         String content = etContent.getText().toString().trim();
@@ -121,13 +152,16 @@ public class NoteFormActivity extends AppCompatActivity {
             parts[1] = parts[1].substring(0, 1).toUpperCase() + parts[1].substring(1);
             date = parts[0] + " " + parts[1] + " " + parts[2];
         }
+
         Note note = new Note(title, content, color, currentFavorite, date);
 
         if (isEditMode) {
             note.setId(noteId);
             noteDao.update(note);
+            Toast.makeText(this, "Note modifiée", Toast.LENGTH_SHORT).show();
         } else {
             noteDao.insert(note);
+            Toast.makeText(this, "Note créée", Toast.LENGTH_SHORT).show();
         }
 
         finish();

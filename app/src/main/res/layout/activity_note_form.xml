@@ -1,21 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/formRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:background="#FFFFFF">
+
+    <LinearLayout
+        android:id="@+id/colorEditPalette"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:orientation="horizontal"
+        android:layout_marginBottom="14dp">
+
+        <ImageView android:id="@+id/colorEdit1" android:layout_width="34dp" android:layout_height="34dp" android:layout_margin="5dp" android:background="@drawable/circle_green" android:contentDescription="vert"/>
+        <ImageView android:id="@+id/colorEdit2" android:layout_width="34dp" android:layout_height="34dp" android:layout_margin="5dp" android:background="@drawable/circle_red" android:contentDescription="rouge"/>
+        <ImageView android:id="@+id/colorEdit3" android:layout_width="34dp" android:layout_height="34dp" android:layout_margin="5dp" android:background="@drawable/circle_blue" android:contentDescription="bleu"/>
+        <ImageView android:id="@+id/colorEdit4" android:layout_width="34dp" android:layout_height="34dp" android:layout_margin="5dp" android:background="@drawable/circle_yellow" android:contentDescription="jaune"/>
+        <ImageView android:id="@+id/colorEdit5" android:layout_width="34dp" android:layout_height="34dp" android:layout_margin="5dp" android:background="@drawable/circle_orange" android:contentDescription="orange"/>
+        <ImageView android:id="@+id/colorEdit6" android:layout_width="34dp" android:layout_height="34dp" android:layout_margin="5dp" android:background="@drawable/circle_gray" android:contentDescription="gris"/>
+
+    </LinearLayout>
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_above="@id/btnSave"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:fillViewport="true">
 
         <LinearLayout
             android:id="@+id/formContainer"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="18dp">
 
             <EditText
                 android:id="@+id/etTitle"
@@ -25,55 +45,37 @@
                 android:hint="Titre"
                 android:textColor="#FFFFFF"
                 android:textColorHint="#CCFFFFFF"
-                android:textSize="18sp"
+                android:textSize="22sp"
                 android:textStyle="bold"
                 android:inputType="text" />
 
             <EditText
                 android:id="@+id/etContent"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:layout_marginTop="6dp"
                 android:background="@android:color/transparent"
                 android:hint="Contenu"
                 android:textColor="#FFFFFF"
                 android:textColorHint="#CCFFFFFF"
-                android:textSize="14sp"
-                android:inputType="textMultiLine"
-                android:minLines="10"
-                android:gravity="top" />
+                android:textSize="15sp"
+                android:gravity="top"
+                android:inputType="textMultiLine" />
 
         </LinearLayout>
     </ScrollView>
 
-    <LinearLayout
-        android:id="@+id/colorEditPalette"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@id/btnSave"
-        android:layout_alignParentEnd="true"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:orientation="horizontal"
-        android:visibility="gone"
-        android:background="#FFFFFF"
-        android:padding="8dp">
-
-        <ImageView android:id="@+id/colorEdit1" android:layout_width="36dp" android:layout_height="36dp" android:layout_margin="4dp" android:background="@drawable/circle_green" android:contentDescription="vert"/>
-        <ImageView android:id="@+id/colorEdit2" android:layout_width="36dp" android:layout_height="36dp" android:layout_margin="4dp" android:background="@drawable/circle_red" android:contentDescription="rouge"/>
-        <ImageView android:id="@+id/colorEdit3" android:layout_width="36dp" android:layout_height="36dp" android:layout_margin="4dp" android:background="@drawable/circle_blue" android:contentDescription="bleu"/>
-        <ImageView android:id="@+id/colorEdit4" android:layout_width="36dp" android:layout_height="36dp" android:layout_margin="4dp" android:background="@drawable/circle_yellow" android:contentDescription="jaune"/>
-        <ImageView android:id="@+id/colorEdit5" android:layout_width="36dp" android:layout_height="36dp" android:layout_margin="4dp" android:background="@drawable/circle_orange" android:contentDescription="orange"/>
-        <ImageView android:id="@+id/colorEdit6" android:layout_width="36dp" android:layout_height="36dp" android:layout_margin="4dp" android:background="@drawable/circle_gray" android:contentDescription="gris"/>
-
-    </LinearLayout>
     <Button
         android:id="@+id/btnSave"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:background="#000000"
+        android:layout_height="56dp"
+        android:layout_marginTop="16dp"
+        android:backgroundTint="#000000"
+        app:cornerRadius="16dp"
         android:text="Créer"
         android:textColor="#FFFFFF"
-        android:textSize="16sp" />
+        android:textSize="16sp"
+        android:textStyle="bold" />
 
-</RelativeLayout>
+</LinearLayout>

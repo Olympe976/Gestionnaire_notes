@@ -8,14 +8,21 @@ import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.lifecycle.LiveData;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +33,7 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnNot
     private RecyclerView recyclerView;
     private EditText etSearch;
     private Button btnFavoris;
-    private ImageButton fabAdd;
+    private FloatingActionButton fabAdd;
     private LinearLayout colorPaletteLayout;
     private TextView tvEmpty;
 
@@ -55,6 +62,9 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnNot
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Evite que les barres systeme (statut en haut, navigation en bas) cachent le contenu
+        setupSystemBars();
+
         // On recupere l'instance de connection a la base de données
         noteDao = AppDatabase.getInstance(this).noteDao();
 
@@ -65,6 +75,23 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnNot
         setupSearch();
         setupFavorisButton();
         setupFAB();
+    }
+
+    // Reserve la place des barres systeme et garde des icones de statut lisibles sur fond clair.
+    private void setupSystemBars() {
+        View root = findViewById(R.id.mainRoot);
+        int base = (int) (12 * getResources().getDisplayMetrics().density);
+
+        ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
+            Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(base + bars.left, base + bars.top, base + bars.right, base + bars.bottom);
+            return insets;
+        });
+
+        WindowInsetsControllerCompat controller =
+                WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+        controller.setAppearanceLightStatusBars(true);
+        controller.setAppearanceLightNavigationBars(true);
     }
 
     //Initialise les références aux vues du layout.
@@ -200,6 +227,10 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnNot
 
      @Override
      public void onNoteDoubleClick(Note note) {
-         noteDao.toggleFavorite(note.getId(), !note.isFavorite());
+         boolean nouvelEtat = !note.isFavorite();
+         noteDao.toggleFavorite(note.getId(), nouvelEtat);
+         Toast.makeText(this,
+                 nouvelEtat ? "Ajoutée aux favoris" : "Retirée des favoris",
+                 Toast.LENGTH_SHORT).show();
      }
 }
